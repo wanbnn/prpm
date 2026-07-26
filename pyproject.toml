@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prpm"
+version = "0.1.0"
+description = "Gerenciador de pacotes e projetos para o ecossistema PyReact"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "wanbnn", email = "gcncomercial@gmail.com" },
+]
+keywords = ["pyreact", "package-manager", "python", "dependencies", "lockfile"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Build Tools",
+]
+dependencies = [
+    "packaging>=23.2",
+    "tomlkit>=0.12.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/wanbnn/prpm"
+Repository = "https://github.com/wanbnn/prpm"
+Issues = "https://github.com/wanbnn/prpm/issues"
+PyReact = "https://github.com/wanbnn/pyreact"
+
+[project.scripts]
+prpm = "prpm.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.coverage.run]
+source = ["prpm"]
+branch = true
+
