@@ -2,6 +2,12 @@
 
 Todas as mudanças relevantes serão registradas neste arquivo.
 
+## 0.2.1 - 2026-07-27
+
+- Publica o PRPM no PyPI.
+- Atualiza a instalação recomendada para `python -m pip install prpm`.
+- Moderniza os metadados de licença do pacote.
+
 ## 0.2.0 - 2026-07-27
 
 - Substitui a página vazia do `prpm create` por um dashboard funcional.

@@ -5,6 +5,7 @@
 ### O package manager do ecossistema PyReact.
 
 [![CI](https://github.com/wanbnn/prpm/actions/workflows/ci.yml/badge.svg)](https://github.com/wanbnn/prpm/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/prpm?logo=pypi&logoColor=white)](https://pypi.org/project/prpm/)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![PyReact](https://img.shields.io/badge/PyReact-1.0.5%2B-7C5CFF)](https://github.com/wanbnn/pyreact)
@@ -29,6 +30,12 @@ de criar um registro incompatível:
 ## Instalação
 
 Requer Python 3.9 ou mais recente.
+
+```bash
+python -m pip install prpm
+```
+
+Para instalar diretamente a versão de desenvolvimento do GitHub:
 
 ```bash
 python -m pip install git+https://github.com/wanbnn/prpm.git
