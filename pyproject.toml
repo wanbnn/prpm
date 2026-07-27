@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "prpm"
 version = "0.3.0"
-description = "Gerenciador de pacotes e projetos para o ecossistema PyReact"
+description = "Package and project manager for the PyReact ecosystem"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
@@ -37,6 +37,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/wanbnn/prpm"
+Documentation = "https://prpm.readthedocs.io"
 Repository = "https://github.com/wanbnn/prpm"
 Issues = "https://github.com/wanbnn/prpm/issues"
 PyReact = "https://github.com/wanbnn/pyreact"

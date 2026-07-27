@@ -2,46 +2,46 @@
 
 # PRPM
 
-### O package manager do ecossistema PyReact.
+The package manager for the PyReact ecosystem.
 
 [![CI](https://github.com/wanbnn/prpm/actions/workflows/ci.yml/badge.svg)](https://github.com/wanbnn/prpm/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/prpm?logo=pypi&logoColor=white)](https://pypi.org/project/prpm/)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://python.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![PyReact](https://img.shields.io/badge/PyReact-1.0.5%2B-7C5CFF)](https://github.com/wanbnn/pyreact)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/wanbnn/prpm/blob/master/LICENSE)
+[![Docs](https://readthedocs.org/projects/prpm/badge/?version=latest)](https://prpm.readthedocs.io/en/latest/)
 
-Crie projetos, instale dependências isoladas, trave versões e execute scripts
-com uma única ferramenta.
+Create projects, install isolated dependencies, lock versions, and run scripts
+with a single tool.
 
 </div>
 
-## Por que PRPM?
+## Why PRPM?
 
-Projetos PyReact são projetos Python. O PRPM aproveita esse ecossistema em vez
-de criar um registro incompatível:
+PyReact projects are Python projects. PRPM builds on that ecosystem instead of
+creating an incompatible registry:
 
-- usa o `pyproject.toml` padrão como manifesto;
-- resolve pacotes no PyPI (incluindo `pyreact-framework`);
-- cria uma `.venv` isolada automaticamente;
-- gera `prpm.lock` com as versões resolvidas;
-- oferece uma experiência familiar para quem usa npm;
-- continua compatível com `pip`, build backends e editores Python.
+- it uses the standard `pyproject.toml` as its manifest;
+- resolves packages from PyPI, including `pyreact-framework`;
+- automatically creates an isolated `.venv`;
+- generates a reproducible `prpm.lock`;
+- provides a familiar experience for npm users;
+- remains compatible with `pip`, build backends, and Python editors.
 
-## Instalação
+## Installation
 
-Requer Python 3.9 ou mais recente.
+PRPM requires Python 3.9 or newer.
 
 ```bash
 python -m pip install prpm
 ```
 
-Para instalar diretamente a versão de desenvolvimento do GitHub:
+Install the development version directly from GitHub:
 
 ```bash
 python -m pip install git+https://github.com/wanbnn/prpm.git
 ```
 
-Para desenvolver o próprio PRPM:
+Set up a local development checkout:
 
 ```bash
 git clone https://github.com/wanbnn/prpm.git
@@ -49,23 +49,22 @@ cd prpm
 python -m pip install -e ".[dev]"
 ```
 
-## Início rápido
+## Quick start
 
-Crie e prepare uma aplicação PyReact:
+Create and prepare a PyReact application:
 
 ```bash
-prpm create minha-app
-cd minha-app
+prpm create my-app
+cd my-app
 prpm run dev
 ```
 
-O comando cria um dashboard SSR completo, estruturado em componentes PyReact,
-instala `pyreact-framework` em `.venv` e grava o lockfile. O boilerplate inclui
-servidor de desenvolvimento, API interativa, tema claro/escuro, build estático
-e testes prontos.
+The command creates a complete SSR dashboard, installs `pyreact-framework`
+inside `.venv`, and writes the lockfile. The generated project includes a
+development server, interactive API, light and dark themes, static build, and
+tests.
 
-Em um projeto existente, como o
-[Agentic Flow](https://github.com/wanbnn/agenticflow):
+For an existing project:
 
 ```bash
 git clone https://github.com/wanbnn/agenticflow.git
@@ -74,63 +73,63 @@ prpm install
 prpm exec agentic-flow
 ```
 
-O PRPM lê as dependências que já estão em `[project].dependencies`.
+PRPM reads the dependencies already declared in `[project].dependencies`.
 
-## Comandos
+## Commands
 
-| Comando | Descrição |
+| Command | Description |
 | --- | --- |
-| `prpm create <nome>` | Cria e instala uma aplicação PyReact |
-| `prpm init [-y]` | Inicializa um `pyproject.toml` |
-| `prpm install` / `prpm i` | Resolve, instala e atualiza `prpm.lock` |
-| `prpm install --frozen` | Instala exatamente o lockfile; ideal para CI |
-| `prpm add <pacote>` | Instala e salva uma dependência |
-| `prpm add -D <pacote>` | Instala e salva em `dev` |
-| `prpm remove <pacote>` | Remove uma dependência |
-| `prpm update [pacotes]` | Atualiza todas ou algumas dependências |
-| `prpm list [--all]` | Lista dependências diretas ou todas |
-| `prpm run [script]` | Lista ou executa scripts |
-| `prpm exec <comando>` | Executa um binário dentro da `.venv` |
-| `prpm test` | Atalho para o script `test` |
-| `prpm info <pacote>` | Consulta metadados no PyPI |
-| `prpm lock [--check]` | Gera ou verifica o lockfile |
-| `prpm login` / `logout` | Guarda ou remove um token no keyring |
-| `prpm whoami` | Mostra a credencial e chave ativas |
-| `prpm key <ação>` | Gera, mostra ou rotaciona a chave Ed25519 |
-| `prpm pack` | Constrói, valida e assina wheel/sdist |
-| `prpm publish` | Empacota e publica no PyPI |
-| `prpm verify <alvo>` | Verifica uma release local ou publicada |
-| `prpm doctor` | Mostra o estado do ambiente |
+| `prpm create <name>` | Create and install a PyReact application |
+| `prpm init [-y]` | Initialize a `pyproject.toml` |
+| `prpm install` / `prpm i` | Resolve, install, and update `prpm.lock` |
+| `prpm install --frozen` | Install exactly from the lockfile; ideal for CI |
+| `prpm add <package>` | Install and save a dependency |
+| `prpm add -D <package>` | Install and save a development dependency |
+| `prpm remove <package>` | Remove a dependency |
+| `prpm update [packages]` | Update all or selected dependencies |
+| `prpm list [--all]` | List direct or all dependencies |
+| `prpm run [script]` | List or run scripts |
+| `prpm exec <command>` | Run a binary inside `.venv` |
+| `prpm test` | Shortcut for the `test` script |
+| `prpm info <package>` | Query package metadata on PyPI |
+| `prpm lock [--check]` | Generate or validate the lockfile |
+| `prpm login` / `logout` | Store or remove a token from the keyring |
+| `prpm whoami` | Show the active credential and key |
+| `prpm key <action>` | Generate, show, or rotate the Ed25519 key |
+| `prpm pack` | Build, validate, and sign a wheel and sdist |
+| `prpm publish` | Package and publish to PyPI |
+| `prpm verify <target>` | Verify a local or published release |
+| `prpm doctor` | Show the environment status |
 
-Aliases disponíveis: `i`, `rm`, `up` e `ls`.
+Available aliases are `i`, `rm`, `up`, and `ls`.
 
-### Dependências
+### Dependencies
 
-Especificadores seguem o padrão Python:
+Dependency specifiers follow Python standards:
 
 ```bash
 prpm add httpx
 prpm add "fastapi>=0.115,<1"
 prpm add -D "pytest>=8"
-prpm add "componente @ git+https://github.com/usuario/componente.git"
+prpm add "component @ git+https://github.com/user/component.git"
 ```
 
-Quando nenhuma versão é informada, o PRPM salva a versão mínima resolvida, por
-exemplo `httpx>=0.28.1`.
+When no version is supplied, PRPM saves the minimum resolved version, such as
+`httpx>=0.28.1`.
 
 ### Scripts
 
-Declare scripts no manifesto:
+Declare scripts in the manifest:
 
 ```toml
 [tool.prpm.scripts]
 dev = "pyreact dev"
 build = "pyreact build"
 test = "python -m pytest"
-serve = ["python", "-m", "meu_app"]
+serve = ["python", "-m", "my_app"]
 ```
 
-Execute-os sem ativar manualmente a `.venv`:
+Run them without manually activating `.venv`:
 
 ```bash
 prpm run build
@@ -138,13 +137,13 @@ prpm test -q
 prpm exec python --version
 ```
 
-## Manifesto e lockfile
+## Manifest and lockfile
 
-O manifesto continua sendo um `pyproject.toml` válido:
+The manifest remains a valid `pyproject.toml`:
 
 ```toml
 [project]
-name = "minha-app"
+name = "my-app"
 version = "0.1.0"
 requires-python = ">=3.9"
 dependencies = ["pyreact-framework>=1.0.5"]
@@ -153,114 +152,81 @@ dependencies = ["pyreact-framework>=1.0.5"]
 dev = ["pytest>=8"]
 ```
 
-O `prpm.lock` deve ser versionado. Ele registra a versão exata de cada pacote,
-a origem e os hashes fornecidos pelo índice. Em CI, use:
+Commit `prpm.lock` to version control. It records the exact version, source, and
+index-provided hashes for every package. In CI, use:
 
 ```bash
 prpm install --frozen
 prpm test
 ```
 
-Se o manifesto e o lock divergirem, o modo congelado falha antes de instalar.
+Frozen mode fails before installation if the manifest and lockfile differ.
 
-## Publicando pacotes
+## Publishing packages
 
-O PRPM utiliza o PyPI como registry. Crie um token em
-<https://pypi.org/manage/account/token/> e faça login:
+PRPM uses PyPI as its registry. Create a token at
+<https://pypi.org/manage/account/token/> and sign in:
 
 ```bash
 prpm login
 prpm whoami
 ```
 
-O token é solicitado sem eco no terminal e armazenado pelo keyring do sistema
-(Credential Manager no Windows, Keychain no macOS e Secret Service no Linux).
-Ele nunca é escrito no projeto ou passado na linha de comando.
-
-O primeiro login também cria uma identidade Ed25519:
+The token is entered without terminal echo and stored in the system keyring. It
+is never written to the project or passed on the command line. The first login
+also creates an Ed25519 identity:
 
 ```bash
 prpm key show
 prpm key rotate
 ```
 
-Prepare uma release sem publicá-la:
+Prepare and verify a release without publishing it:
 
 ```bash
 prpm pack
 prpm verify dist
 ```
 
-O diretório `dist/` passa a conter:
+The `dist/` directory will contain the wheel, source distribution,
+`prpm-manifest.json`, and `prpm-manifest.sig`. The manifest records SHA-256
+hashes, sizes, dependencies, and the public key; the signature authenticates
+that manifest.
 
-```text
-pacote-1.0.0-py3-none-any.whl
-pacote-1.0.0.tar.gz
-prpm-manifest.json
-prpm-manifest.sig
-```
-
-`prpm-manifest.json` registra hashes SHA-256, tamanhos, dependências e a chave
-pública. `prpm-manifest.sig` contém a assinatura Ed25519 do manifesto.
-
-Publique com um único comando:
+Publish with:
 
 ```bash
 prpm publish
 ```
 
-O comando reconstrói os artefatos, executa `twine check`, valida a assinatura,
-publica wheel/sdist e consulta a API do PyPI para comparar os hashes remotos.
-Para publicar uma release já empacotada:
+PRPM rebuilds the artifacts, runs `twine check`, validates the signature,
+uploads the wheel and sdist, and compares remote hashes through the PyPI API.
+Use `--no-build` for an already packed release or `--dry-run` to validate the
+entire flow without uploading.
 
-```bash
-prpm publish --no-build
-```
-
-Teste todo o fluxo sem fazer upload:
-
-```bash
-prpm publish --dry-run
-```
-
-TestPyPI também é suportado:
+TestPyPI is also supported:
 
 ```bash
 prpm login --repository testpypi
 prpm publish --repository testpypi
 ```
 
-Em CI, evite login interativo e use uma variável secreta:
+For CI, provide `PRPM_PYPI_TOKEN` or `PRPM_TESTPYPI_TOKEN` as a secret
+environment variable. When no keyring is available, `pack` creates an ephemeral
+Ed25519 identity for that release.
 
-```bash
-PRPM_PYPI_TOKEN=pypi-... prpm publish
-```
-
-Se o ambiente não oferecer um keyring (comum em runners headless), o `pack`
-gera uma chave Ed25519 efêmera para aquela release; a assinatura continua
-verificável pelo manifesto, mas a chave não persiste para o próximo build.
-
-No PowerShell:
-
-```powershell
-$env:PRPM_PYPI_TOKEN = "pypi-..."
-prpm publish
-```
-
-Verifique qualquer pacote publicado:
+Verify any published package:
 
 ```bash
 prpm verify prpm
 prpm verify "prpm==0.3.0"
 ```
 
-A verificação remota compara os arquivos com os SHA-256 publicados pela API do
-PyPI e valida cada entrada do `RECORD` dentro do wheel. A assinatura PRPM local
-prova que o manifesto e os artefatos continuam associados à mesma chave; nesta
-fase, a autorização do mantenedor e do nome do pacote continua sendo fornecida
-pelo próprio PyPI.
+Remote verification compares files with PyPI SHA-256 values and validates every
+wheel `RECORD` entry. PyPI remains the authority for maintainer and package-name
+ownership.
 
-## Desenvolvimento
+## Development
 
 ```bash
 python -m pip install -e ".[dev]"
@@ -268,8 +234,10 @@ python -m pytest
 python -m prpm --help
 ```
 
-Consulte [CONTRIBUTING.md](CONTRIBUTING.md) para o fluxo de contribuição.
+See [CONTRIBUTING.md](https://github.com/wanbnn/prpm/blob/master/CONTRIBUTING.md)
+for the contribution workflow and the
+[complete documentation](https://prpm.readthedocs.io/en/latest/).
 
-## Licença
+## License
 
-MIT. Veja [LICENSE](LICENSE).
+MIT. See [LICENSE](https://github.com/wanbnn/prpm/blob/master/LICENSE).

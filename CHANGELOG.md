@@ -1,37 +1,36 @@
 # Changelog
 
-Todas as mudanças relevantes serão registradas neste arquivo.
+All notable changes to this project will be documented in this file.
 
 ## 0.3.0 - 2026-07-27
 
-- Adiciona `prpm login`, `logout` e `whoami` com tokens no keyring do sistema.
-- Adiciona identidades Ed25519 geradas localmente e rotação com `prpm key`.
-- Adiciona `prpm pack` para construir, validar e assinar releases.
-- Adiciona `prpm publish` para publicação segura no PyPI e TestPyPI.
-- Adiciona `prpm verify` para conferir manifestos, hashes do PyPI e o RECORD
-  interno de wheels.
-- Aceita credenciais de CI pelas variáveis `PRPM_PYPI_TOKEN` e
-  `PRPM_TESTPYPI_TOKEN`.
+- Added `prpm login`, `logout`, and `whoami` with system-keyring token storage.
+- Added locally generated Ed25519 identities and key rotation with `prpm key`.
+- Added `prpm pack` to build, validate, and sign releases.
+- Added `prpm publish` for secure publishing to PyPI and TestPyPI.
+- Added `prpm verify` to validate manifests, PyPI hashes, and wheel `RECORD`
+  entries.
+- Added CI credentials through `PRPM_PYPI_TOKEN` and `PRPM_TESTPYPI_TOKEN`.
 
 ## 0.2.1 - 2026-07-27
 
-- Publica o PRPM no PyPI.
-- Atualiza a instalação recomendada para `python -m pip install prpm`.
-- Moderniza os metadados de licença do pacote.
+- Published PRPM on PyPI.
+- Updated the recommended installation command to `python -m pip install prpm`.
+- Modernized package license metadata.
 
 ## 0.2.0 - 2026-07-27
 
-- Substitui a página vazia do `prpm create` por um dashboard funcional.
-- Usa componentes PyReact reais e Server-Side Rendering no boilerplate.
-- Adiciona servidor de desenvolvimento, API de fragmentos e build estático.
-- Inclui filtros, conclusão, criação de tarefas e tema claro/escuro.
-- Expande o projeto gerado com componentes, dados, assets e seis testes.
+- Replaced the empty `prpm create` page with a functional dashboard.
+- Added real PyReact components and server-side rendering to the boilerplate.
+- Added a development server, fragment API, and static build.
+- Added filtering, completion, task creation, and light/dark themes.
+- Expanded the generated project with components, data, assets, and six tests.
 
 ## 0.1.0 - 2026-07-26
 
-- CLI inicial com `init`, `create`, `install`, `add`, `remove`, `update`,
-  `list`, `run`, `exec`, `test`, `info`, `lock` e `doctor`.
-- Ambientes `.venv` isolados por projeto.
-- Integração com `pyproject.toml`, PyPI e o resolvedor do pip.
-- Lockfile reprodutível com versões, URLs e hashes.
-- Scaffold pronto para aplicações PyReact.
+- Initial CLI with `init`, `create`, `install`, `add`, `remove`, `update`,
+  `list`, `run`, `exec`, `test`, `info`, `lock`, and `doctor`.
+- Isolated `.venv` environments per project.
+- Integration with `pyproject.toml`, PyPI, and pip's resolver.
+- Reproducible lockfile with versions, URLs, and hashes.
+- Ready-to-use scaffold for PyReact applications.
