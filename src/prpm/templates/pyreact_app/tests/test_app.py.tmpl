@@ -1,0 +1,27 @@
+from pyreact import h, render_to_string
+
+from src.app import render_app, render_document
+from src.components import App, TaskList
+from src.data import fresh_tasks
+
+
+def test_app_is_composed_with_pyreact():
+    html = render_to_string(h(App, {"tasks": fresh_tasks()}))
+    assert 'data-reactroot=""' in html
+    assert "Good morning, Builder" in html
+    assert "Rendered with PyReact" in html
+    assert "Today’s tasks" in html
+
+
+def test_task_list_renders_data_from_props():
+    html = render_to_string(h(TaskList, {"tasks": fresh_tasks()[:1]}))
+    assert "Review the final landing page" in html
+    assert 'data-task-id="1"' in html
+
+
+def test_document_loads_assets_and_ssr_markup():
+    html = render_document(fresh_tasks())
+    assert html.startswith("<!doctype html>")
+    assert 'src="/app.js"' in html
+    assert 'href="/styles.css"' in html
+    assert render_app(fresh_tasks()) in html

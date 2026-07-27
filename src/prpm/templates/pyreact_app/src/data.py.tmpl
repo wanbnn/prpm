@@ -1,0 +1,68 @@
+"""Dados iniciais usados pelo dashboard de demonstração."""
+
+from copy import deepcopy
+
+PROJECT = {
+    "name": "Website launch",
+    "progress": 72,
+    "due": "Friday, 6:00 PM",
+}
+
+INITIAL_TASKS = [
+    {
+        "id": 1,
+        "title": "Review the final landing page",
+        "project": "Website launch",
+        "assignee": "Maya",
+        "initials": "MR",
+        "tone": "violet",
+        "done": True,
+        "priority": "High",
+    },
+    {
+        "id": 2,
+        "title": "Connect analytics events",
+        "project": "Website launch",
+        "assignee": "Theo",
+        "initials": "TS",
+        "tone": "orange",
+        "done": False,
+        "priority": "Medium",
+    },
+    {
+        "id": 3,
+        "title": "Prepare launch announcement",
+        "project": "Marketing",
+        "assignee": "Nina",
+        "initials": "NK",
+        "tone": "cyan",
+        "done": False,
+        "priority": "High",
+    },
+    {
+        "id": 4,
+        "title": "Run accessibility audit",
+        "project": "Quality",
+        "assignee": "Alex",
+        "initials": "AC",
+        "tone": "green",
+        "done": False,
+        "priority": "Medium",
+    },
+]
+
+ACTIVITY = [
+    {"day": "Mon", "value": 48},
+    {"day": "Tue", "value": 68},
+    {"day": "Wed", "value": 54},
+    {"day": "Thu", "value": 86},
+    {"day": "Fri", "value": 74},
+    {"day": "Sat", "value": 42},
+    {"day": "Sun", "value": 63},
+]
+
+
+def fresh_tasks():
+    """Return an isolated copy so tests and servers do not share mutations."""
+    return deepcopy(INITIAL_TASKS)
+

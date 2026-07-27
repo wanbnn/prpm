@@ -1,0 +1,112 @@
+(() => {
+  const root = document.documentElement;
+  const taskList = document.querySelector("#task-list");
+  const filterButtons = [...document.querySelectorAll("[data-filter]")];
+  const addForm = document.querySelector("#quick-add");
+  const toast = document.querySelector("#toast");
+  let activeFilter = "all";
+  let toastTimer;
+
+  const showToast = (message) => {
+    toast.textContent = message;
+    toast.classList.add("is-visible");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 2200);
+  };
+
+  const request = async (url, options = {}) => {
+    const response = await fetch(url, {
+      ...options,
+      headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || "Something went wrong");
+    return payload;
+  };
+
+  const replaceTasks = (html) => {
+    taskList.style.opacity = "0";
+    setTimeout(() => {
+      taskList.innerHTML = html;
+      taskList.style.opacity = "1";
+    }, 120);
+  };
+
+  document.addEventListener("click", async (event) => {
+    const toggle = event.target.closest("[data-action='toggle-task']");
+    if (toggle) {
+      const row = toggle.closest(".task");
+      row.classList.toggle("is-done");
+      toggle.setAttribute("aria-pressed", row.classList.contains("is-done"));
+      try {
+        const payload = await request("/api/tasks/toggle", {
+          method: "POST",
+          body: JSON.stringify({ id: Number(toggle.dataset.taskId), filter: activeFilter }),
+        });
+        replaceTasks(payload.html);
+        showToast(payload.task.done ? "Task completed — nice work!" : "Task reopened");
+      } catch (error) {
+        row.classList.toggle("is-done");
+        showToast(error.message);
+      }
+      return;
+    }
+
+    const filter = event.target.closest("[data-filter]");
+    if (filter) {
+      activeFilter = filter.dataset.filter;
+      filterButtons.forEach((button) => button.classList.toggle("is-active", button === filter));
+      try {
+        const payload = await request(`/api/tasks?filter=${activeFilter}`);
+        replaceTasks(payload.html);
+      } catch (error) {
+        showToast(error.message);
+      }
+      return;
+    }
+
+    if (event.target.closest("[data-action='theme']")) {
+      const dark = root.dataset.theme !== "dark";
+      root.dataset.theme = dark ? "dark" : "light";
+      localStorage.setItem("orbit-theme", root.dataset.theme);
+      showToast(`${dark ? "Dark" : "Light"} theme enabled`);
+      return;
+    }
+
+    if (event.target.closest("[data-action='focus-add']")) {
+      addForm.querySelector("input").focus();
+      addForm.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  });
+
+  addForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const input = addForm.elements.title;
+    const title = input.value.trim();
+    if (!title) {
+      input.focus();
+      return;
+    }
+    const button = addForm.querySelector("button");
+    button.disabled = true;
+    try {
+      const payload = await request("/api/tasks", {
+        method: "POST",
+        body: JSON.stringify({ title, filter: activeFilter }),
+      });
+      input.value = "";
+      replaceTasks(payload.html);
+      showToast("Task added to your focus list");
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  const savedTheme = localStorage.getItem("orbit-theme");
+  if (savedTheme) root.dataset.theme = savedTheme;
+
+  requestAnimationFrame(() => document.body.classList.add("is-ready"));
+})();
+

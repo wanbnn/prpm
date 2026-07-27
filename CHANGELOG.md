@@ -2,6 +2,14 @@
 
 Todas as mudanças relevantes serão registradas neste arquivo.
 
+## 0.2.0 - 2026-07-27
+
+- Substitui a página vazia do `prpm create` por um dashboard funcional.
+- Usa componentes PyReact reais e Server-Side Rendering no boilerplate.
+- Adiciona servidor de desenvolvimento, API de fragmentos e build estático.
+- Inclui filtros, conclusão, criação de tarefas e tema claro/escuro.
+- Expande o projeto gerado com componentes, dados, assets e seis testes.
+
 ## 0.1.0 - 2026-07-26
 
 - CLI inicial com `init`, `create`, `install`, `add`, `remove`, `update`,
@@ -10,4 +18,3 @@ Todas as mudanças relevantes serão registradas neste arquivo.
 - Integração com `pyproject.toml`, PyPI e o resolvedor do pip.
 - Lockfile reprodutível com versões, URLs e hashes.
 - Scaffold pronto para aplicações PyReact.
-

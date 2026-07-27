@@ -52,8 +52,10 @@ cd minha-app
 prpm run dev
 ```
 
-O comando cria a estrutura recomendada pelo PyReact, instala
-`pyreact-framework` em `.venv` e grava o lockfile.
+O comando cria um dashboard SSR completo, estruturado em componentes PyReact,
+instala `pyreact-framework` em `.venv` e grava o lockfile. O boilerplate inclui
+servidor de desenvolvimento, API interativa, tema claro/escuro, build estático
+e testes prontos.
 
 Em um projeto existente, como o
 [Agentic Flow](https://github.com/wanbnn/agenticflow):
@@ -161,4 +163,3 @@ Consulte [CONTRIBUTING.md](CONTRIBUTING.md) para o fluxo de contribuição.
 ## Licença
 
 MIT. Veja [LICENSE](LICENSE).
-

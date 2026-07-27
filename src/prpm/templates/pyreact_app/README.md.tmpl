@@ -1,0 +1,56 @@
+# {{PROJECT_NAME}}
+
+Um dashboard funcional construído com
+[PyReact](https://github.com/wanbnn/pyreact) e gerenciado pelo
+[PRPM](https://github.com/wanbnn/prpm).
+
+## Começando
+
+```bash
+prpm install
+prpm run dev
+```
+
+Abra <http://127.0.0.1:3000>. O servidor recarrega a página automaticamente
+quando um arquivo em `src/` ou `public/` é alterado.
+
+## O que este exemplo demonstra
+
+- componentes funcionais e composição com `h()`;
+- propriedades, listas e renderização condicional;
+- Server-Side Rendering com `render_to_string()`;
+- endpoints que devolvem fragmentos renderizados pelo PyReact;
+- interações progressivas no navegador;
+- testes do componente e da camada HTTP;
+- build estático para a pasta `dist/`.
+
+## Estrutura
+
+```text
+src/
+├── app.py                  # composição da página e documento SSR
+├── build.py                # build estático
+├── data.py                 # dados iniciais do exemplo
+├── server.py               # servidor e API de desenvolvimento
+└── components/
+    └── dashboard.py        # componentes reutilizáveis
+public/
+├── app.js                  # interações progressivas
+├── favicon.svg
+└── styles.css
+tests/
+├── test_app.py
+└── test_server.py
+```
+
+## Comandos
+
+```bash
+prpm run dev -- --port 4100
+prpm run build
+prpm test
+prpm add pacote
+```
+
+Comece alterando `src/components/dashboard.py` e `public/styles.css`.
+

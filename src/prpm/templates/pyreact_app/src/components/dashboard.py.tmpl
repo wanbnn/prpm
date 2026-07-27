@@ -1,0 +1,300 @@
+"""Componentes declarativos do dashboard.
+
+Todos os elementos abaixo são VNodes PyReact. O servidor os transforma em HTML
+com renderização SSR, e o JavaScript em ``public/app.js`` adiciona interações
+progressivas sem esconder a estrutura principal da aplicação.
+"""
+
+from pyreact import h
+
+from src.data import ACTIVITY, PROJECT
+
+
+def Icon(props):
+    """Render a small inline icon from an SVG path."""
+    paths = {
+        "grid": "M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z",
+        "check": "m5 12 4 4L19 6",
+        "clock": "M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0",
+        "spark": "m12 3 1.7 4.3L18 9l-4.3 1.7L12 15l-1.7-4.3L6 9l4.3-1.7z",
+        "plus": "M12 5v14M5 12h14",
+        "arrow": "M5 12h14m-6-6 6 6-6 6",
+        "moon": "M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5",
+    }
+    name = props.get("name", "spark")
+    filled = name in {"grid", "spark"}
+    return h(
+        "svg",
+        {
+            "className": props.get("className", "icon"),
+            "viewBox": "0 0 24 24",
+            "aria-hidden": "true",
+            "fill": "currentColor" if filled else "none",
+            "stroke": "none" if filled else "currentColor",
+            "stroke-width": "1.8",
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round",
+        },
+        h("path", {"d": paths[name]}),
+    )
+
+
+def Avatar(props):
+    return h(
+        "span",
+        {
+            "className": f"avatar avatar--{props.get('tone', 'violet')}",
+            "title": props.get("name", ""),
+            "aria-label": props.get("name", ""),
+        },
+        props.get("initials", "PR"),
+    )
+
+
+def Sidebar(_props):
+    items = [
+        ("grid", "Overview", True),
+        ("check", "My tasks", False),
+        ("clock", "Timeline", False),
+        ("spark", "Insights", False),
+    ]
+    return h(
+        "aside",
+        {"className": "sidebar"},
+        h(
+            "a",
+            {"className": "brand", "href": "/", "aria-label": "Orbit home"},
+            h("span", {"className": "brand__mark"}, Icon({"name": "spark"})),
+            h("span", None, "orbit"),
+        ),
+        h(
+            "nav",
+            {"className": "nav", "aria-label": "Main navigation"},
+            [
+                h(
+                    "a",
+                    {
+                        "className": "nav__item is-active" if active else "nav__item",
+                        "href": "#overview",
+                    },
+                    Icon({"name": icon}),
+                    h("span", None, label),
+                )
+                for icon, label, active in items
+            ],
+        ),
+        h(
+            "div",
+            {"className": "sidebar__project"},
+            h("span", {"className": "eyebrow"}, "Current project"),
+            h("strong", None, PROJECT["name"]),
+            h(
+                "div",
+                {"className": "mini-progress"},
+                h("span", {"style": {"width": f"{PROJECT['progress']}%"}}),
+            ),
+            h("small", None, f"{PROJECT['progress']}% complete"),
+        ),
+        h(
+            "div",
+            {"className": "sidebar__profile"},
+            Avatar({"initials": "WB", "name": "Wan Bnn", "tone": "violet"}),
+            h("span", None, h("strong", None, "Wan Bnn"), h("small", None, "Workspace")),
+            h("button", {"className": "icon-button", "aria-label": "More options"}, "•••"),
+        ),
+    )
+
+
+def MetricCard(props):
+    return h(
+        "article",
+        {"className": f"metric metric--{props['tone']}"},
+        h(
+            "div",
+            {"className": "metric__top"},
+            h("span", {"className": "metric__icon"}, Icon({"name": props["icon"]})),
+            h("span", {"className": "trend"}, props["trend"]),
+        ),
+        h("strong", {"className": "metric__value"}, props["value"]),
+        h("span", {"className": "metric__label"}, props["label"]),
+        h("small", None, props["caption"]),
+    )
+
+
+def TaskRow(props):
+    task = props["task"]
+    classes = "task is-done" if task["done"] else "task"
+    return h(
+        "li",
+        {"className": classes, "data-task-id": str(task["id"])},
+        h(
+            "button",
+            {
+                "className": "task__check",
+                "data-action": "toggle-task",
+                "data-task-id": str(task["id"]),
+                "aria-label": f"Toggle {task['title']}",
+                "aria-pressed": "true" if task["done"] else "false",
+            },
+            Icon({"name": "check"}),
+        ),
+        h(
+            "span",
+            {"className": "task__copy"},
+            h("strong", None, task["title"]),
+            h("small", None, task["project"]),
+        ),
+        h(
+            "span",
+            {"className": f"priority priority--{task['priority'].lower()}"},
+            task["priority"],
+        ),
+        Avatar(task),
+    )
+
+
+def TaskList(props):
+    tasks = props.get("tasks", [])
+    if not tasks:
+        return h(
+            "div",
+            {"className": "empty-state"},
+            h("span", None, "✓"),
+            h("strong", None, "All clear"),
+            h("p", None, "No tasks match this view."),
+        )
+    return h("ul", {"className": "task-list"}, [h(TaskRow, {"task": task}) for task in tasks])
+
+
+def ActivityChart(_props):
+    return h(
+        "div",
+        {"className": "chart", "aria-label": "Weekly activity chart"},
+        [
+            h(
+                "div",
+                {"className": "chart__column"},
+                h(
+                    "span",
+                    {
+                        "className": "chart__bar",
+                        "style": {"height": f"{point['value']}%"},
+                        "title": f"{point['value']}% on {point['day']}",
+                    },
+                ),
+                h("small", None, point["day"]),
+            )
+            for point in ACTIVITY
+        ],
+    )
+
+
+def FocusPanel(props):
+    return h(
+        "section",
+        {"className": "panel focus-panel"},
+        h(
+            "header",
+            {"className": "panel__header"},
+            h("span", None, h("span", {"className": "eyebrow"}, "Focus"), h("h2", None, "Today’s tasks")),
+            h(
+                "div",
+                {"className": "filter", "role": "group", "aria-label": "Filter tasks"},
+                h("button", {"className": "is-active", "data-filter": "all"}, "All"),
+                h("button", {"data-filter": "open"}, "Open"),
+                h("button", {"data-filter": "done"}, "Done"),
+            ),
+        ),
+        h("div", {"id": "task-list", "aria-live": "polite"}, h(TaskList, props)),
+        h(
+            "form",
+            {"className": "quick-add", "id": "quick-add"},
+            h("input", {"name": "title", "placeholder": "Add a task…", "autocomplete": "off"}),
+            h("button", {"type": "submit", "className": "button button--compact"}, Icon({"name": "plus"}), "Add"),
+        ),
+    )
+
+
+def ActivityPanel(_props):
+    return h(
+        "section",
+        {"className": "panel activity-panel"},
+        h(
+            "header",
+            {"className": "panel__header"},
+            h("span", None, h("span", {"className": "eyebrow"}, "Momentum"), h("h2", None, "Weekly activity")),
+            h("span", {"className": "live-pill"}, h("i", None), "+18%"),
+        ),
+        h(ActivityChart, {}),
+        h(
+            "div",
+            {"className": "streak"},
+            h("span", {"className": "streak__icon"}, "✦"),
+            h("span", None, h("strong", None, "5 day streak"), h("small", None, "Your best week this month")),
+        ),
+    )
+
+
+def App(props):
+    """Compose the complete dashboard from smaller PyReact components."""
+    tasks = props.get("tasks", [])
+    completed = sum(1 for task in tasks if task["done"])
+    metrics = [
+        {"icon": "check", "value": str(completed), "label": "Completed", "caption": "tasks this week", "trend": "+12%", "tone": "violet"},
+        {"icon": "clock", "value": "18.4h", "label": "Deep work", "caption": "focused time", "trend": "+2.4h", "tone": "cyan"},
+        {"icon": "spark", "value": "92%", "label": "Momentum", "caption": "weekly score", "trend": "Great", "tone": "orange"},
+    ]
+    return h(
+        "div",
+        {"className": "app-shell", "id": "overview"},
+        h(Sidebar, {}),
+        h(
+            "main",
+            {"className": "workspace"},
+            h(
+                "header",
+                {"className": "topbar"},
+                h(
+                    "div",
+                    None,
+                    h("span", {"className": "eyebrow eyebrow--accent"}, "Monday · 27 July"),
+                    h("h1", None, "Good morning, Builder", h("span", None, ".")),
+                    h("p", None, "You’re making great progress. Let’s keep the momentum."),
+                ),
+                h(
+                    "div",
+                    {"className": "topbar__actions"},
+                    h("span", {"className": "pyreact-badge"}, h("i", None, "Py"), "Rendered with PyReact"),
+                    h("button", {"className": "icon-button theme-toggle", "data-action": "theme", "aria-label": "Toggle theme"}, Icon({"name": "moon"})),
+                    h("button", {"className": "button", "data-action": "focus-add"}, Icon({"name": "plus"}), "New task"),
+                ),
+            ),
+            h("section", {"className": "metrics"}, [h(MetricCard, metric) for metric in metrics]),
+            h("section", {"className": "dashboard-grid"}, h(FocusPanel, {"tasks": tasks}), h(ActivityPanel, {})),
+            h(
+                "section",
+                {"className": "project-banner"},
+                h(
+                    "div",
+                    {"className": "project-banner__content"},
+                    h("span", {"className": "eyebrow"}, "Next milestone"),
+                    h("h2", None, PROJECT["name"]),
+                    h("p", None, f"Due {PROJECT['due']} · {PROJECT['progress']}% complete"),
+                ),
+                h(
+                    "div",
+                    {"className": "project-banner__progress"},
+                    h("strong", None, f"{PROJECT['progress']}%"),
+                    h("div", {"className": "progress"}, h("span", {"style": {"width": f"{PROJECT['progress']}%"}})),
+                ),
+                h("a", {"className": "round-link", "href": "#tasks", "aria-label": "Open project"}, Icon({"name": "arrow"})),
+            ),
+            h(
+                "footer",
+                {"className": "footer"},
+                h("span", None, "Built with ", h("strong", None, "PyReact"), " + PRPM"),
+                h("span", None, "Edit ", h("code", None, "src/components/dashboard.py"), " to make it yours."),
+            ),
+        ),
+        h("div", {"className": "toast", "id": "toast", "role": "status", "aria-live": "polite"}),
+    )
