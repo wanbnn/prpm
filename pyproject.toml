@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "prpm"
-version = "0.2.1"
+version = "0.3.0"
 description = "Gerenciador de pacotes e projetos para o ecossistema PyReact"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -21,8 +21,12 @@ classifiers = [
     "Topic :: Software Development :: Build Tools",
 ]
 dependencies = [
+    "build>=1.2.2",
+    "cryptography>=42.0",
+    "keyring>=25.0",
     "packaging>=23.2",
     "tomlkit>=0.12.3",
+    "twine>=6.0",
 ]
 
 [project.optional-dependencies]

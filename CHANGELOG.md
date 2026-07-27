@@ -2,6 +2,17 @@
 
 Todas as mudanças relevantes serão registradas neste arquivo.
 
+## 0.3.0 - 2026-07-27
+
+- Adiciona `prpm login`, `logout` e `whoami` com tokens no keyring do sistema.
+- Adiciona identidades Ed25519 geradas localmente e rotação com `prpm key`.
+- Adiciona `prpm pack` para construir, validar e assinar releases.
+- Adiciona `prpm publish` para publicação segura no PyPI e TestPyPI.
+- Adiciona `prpm verify` para conferir manifestos, hashes do PyPI e o RECORD
+  interno de wheels.
+- Aceita credenciais de CI pelas variáveis `PRPM_PYPI_TOKEN` e
+  `PRPM_TESTPYPI_TOKEN`.
+
 ## 0.2.1 - 2026-07-27
 
 - Publica o PRPM no PyPI.

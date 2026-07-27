@@ -29,3 +29,17 @@ def test_exec_requires_command(tmp_path, monkeypatch):
     with pytest.raises(PrpmError, match="Informe um comando"):
         call(["exec"])
 
+
+@pytest.mark.parametrize(
+    "arguments,command",
+    [
+        (["login", "--repository", "testpypi", "--token-stdin"], "login"),
+        (["pack", "--force"], "pack"),
+        (["publish", "--dry-run"], "publish"),
+        (["verify", "demo==1.0.0"], "verify"),
+        (["key", "generate"], "key"),
+        (["whoami"], "whoami"),
+    ],
+)
+def test_release_commands_are_registered(arguments, command):
+    assert build_parser().parse_args(arguments).command == command
