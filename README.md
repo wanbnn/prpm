@@ -31,6 +31,36 @@ creating an incompatible registry:
 
 PRPM requires Python 3.9 or newer.
 
+### Quick install
+
+The bundled installer sets up the published release from PyPI and verifies the
+resulting `prpm` command:
+
+```bash
+# Linux, macOS, and Windows Subsystem for Linux
+curl -fsSL https://raw.githubusercontent.com/wanbnn/prpm/main/install.sh | bash
+```
+
+```powershell
+# Windows PowerShell
+irm https://raw.githubusercontent.com/wanbnn/prpm/main/install.ps1 | iex
+```
+
+Both installers accept the same flags. Install the development version from
+GitHub:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/wanbnn/prpm/main/install.sh | bash -s -- --dev
+```
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/wanbnn/prpm/main/install.ps1))) -Dev
+```
+
+### Manual install
+
+Install the latest published release with pip:
+
 ```bash
 python -m pip install prpm
 ```
