@@ -13,18 +13,20 @@ def test_create_project_builds_pyreact_layout(tmp_path):
 
     manifest = Manifest(destination)
     assert manifest.name == "minha-app"
-    assert "pyreact-framework>=1.0.5" in manifest.dependencies()
-    assert manifest.scripts()["dev"] == "python -m src.server"
-    assert manifest.scripts()["build"] == "python -m src.build"
+    assert "pyreact-framework>=1.1.0" in manifest.dependencies()
+    assert manifest.requires_python == ">=3.10"
+    assert manifest.scripts()["dev"] == "pyreact dev"
+    assert manifest.scripts()["build"] == "pyreact build"
     assert (destination / "src/app.py").is_file()
-    assert (destination / "src/server.py").is_file()
+    assert not (destination / "src/server.py").exists()
+    assert not (destination / "src/build.py").exists()
     assert (destination / "src/components/dashboard.py").is_file()
     assert (destination / "public/styles.css").is_file()
-    assert (destination / "public/app.js").is_file()
+    assert not (destination / "public/app.js").exists()
     assert (destination / "tests/test_app.py").is_file()
-    assert (destination / "tests/test_server.py").is_file()
+    assert (destination / "tests/test_runtime.py").is_file()
     assert "render_to_string" in (destination / "src/app.py").read_text(encoding="utf-8")
-    assert "from pyreact import h" in (
+    assert "from pyreact import Link, Router" in (
         destination / "src/components/dashboard.py"
     ).read_text(encoding="utf-8")
 

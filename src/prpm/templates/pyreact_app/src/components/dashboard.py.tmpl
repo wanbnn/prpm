@@ -1,13 +1,15 @@
-"""Componentes declarativos do dashboard.
+"""Dashboard interativo executado integralmente pelo runtime PyReact."""
 
-Todos os elementos abaixo são VNodes PyReact. O servidor os transforma em HTML
-com renderização SSR, e o JavaScript em ``public/app.js`` adiciona interações
-progressivas sem esconder a estrutura principal da aplicação.
-"""
+from pathlib import Path
 
-from pyreact import h
+from pyreact import Link, Router, create_global_style, h, route, use_state
 
-from src.data import ACTIVITY, PROJECT
+from src.data import ACTIVITY, PROJECT, fresh_tasks
+
+
+GlobalStyles = create_global_style(
+    (Path(__file__).resolve().parents[2] / "public" / "styles.css").read_text(encoding="utf-8")
+)
 
 
 def Icon(props):
@@ -51,19 +53,20 @@ def Avatar(props):
     )
 
 
-def Sidebar(_props):
+def Sidebar(props):
+    current_path = props.get("current_path", "/")
     items = [
-        ("grid", "Overview", True),
-        ("check", "My tasks", False),
-        ("clock", "Timeline", False),
-        ("spark", "Insights", False),
+        ("grid", "Overview", "/"),
+        ("check", "My tasks", "/tasks"),
+        ("clock", "Timeline", "/timeline"),
+        ("spark", "About", "/about"),
     ]
     return h(
         "aside",
         {"className": "sidebar"},
         h(
-            "a",
-            {"className": "brand", "href": "/", "aria-label": "Orbit home"},
+            Link,
+            {"className": "brand", "to": "/", "aria-label": "Orbit home"},
             h("span", {"className": "brand__mark"}, Icon({"name": "spark"})),
             h("span", None, "orbit"),
         ),
@@ -72,15 +75,15 @@ def Sidebar(_props):
             {"className": "nav", "aria-label": "Main navigation"},
             [
                 h(
-                    "a",
+                    Link,
                     {
-                        "className": "nav__item is-active" if active else "nav__item",
-                        "href": "#overview",
+                        "className": "nav__item is-active" if destination == current_path else "nav__item",
+                        "to": destination,
                     },
                     Icon({"name": icon}),
                     h("span", None, label),
                 )
-                for icon, label, active in items
+                for icon, label, destination in items
             ],
         ),
         h(
@@ -135,6 +138,7 @@ def TaskRow(props):
                 "data-task-id": str(task["id"]),
                 "aria-label": f"Toggle {task['title']}",
                 "aria-pressed": "true" if task["done"] else "false",
+                "onClick": lambda event: props["on_toggle"](task["id"]),
             },
             Icon({"name": "check"}),
         ),
@@ -163,7 +167,11 @@ def TaskList(props):
             h("strong", None, "All clear"),
             h("p", None, "No tasks match this view."),
         )
-    return h("ul", {"className": "task-list"}, [h(TaskRow, {"task": task}) for task in tasks])
+    return h(
+        "ul",
+        {"className": "task-list"},
+        [h(TaskRow, {"key": task["id"], "task": task, "on_toggle": props["on_toggle"]}) for task in tasks],
+    )
 
 
 def ActivityChart(_props):
@@ -200,16 +208,34 @@ def FocusPanel(props):
             h(
                 "div",
                 {"className": "filter", "role": "group", "aria-label": "Filter tasks"},
-                h("button", {"className": "is-active", "data-filter": "all"}, "All"),
-                h("button", {"data-filter": "open"}, "Open"),
-                h("button", {"data-filter": "done"}, "Done"),
+                *[
+                    h(
+                        "button",
+                        {
+                            "className": "is-active" if props["active_filter"] == name else "",
+                            "data-filter": name,
+                            "onClick": lambda event, selected=name: props["on_filter"](selected),
+                        },
+                        label,
+                    )
+                    for name, label in (("all", "All"), ("open", "Open"), ("done", "Done"))
+                ],
             ),
         ),
         h("div", {"id": "task-list", "aria-live": "polite"}, h(TaskList, props)),
         h(
             "form",
-            {"className": "quick-add", "id": "quick-add"},
-            h("input", {"name": "title", "placeholder": "Add a task…", "autocomplete": "off"}),
+            {"className": "quick-add", "id": "quick-add", "onSubmit": props["on_add"]},
+            h(
+                "input",
+                {
+                    "name": "title",
+                    "value": props["draft"],
+                    "placeholder": "Add a task…",
+                    "autocomplete": "off",
+                    "onInput": lambda event: props["on_draft"](event.value),
+                },
+            ),
             h("button", {"type": "submit", "className": "button button--compact"}, Icon({"name": "plus"}), "Add"),
         ),
     )
@@ -235,10 +261,52 @@ def ActivityPanel(_props):
     )
 
 
-def App(props):
+def Dashboard(props):
     """Compose the complete dashboard from smaller PyReact components."""
-    tasks = props.get("tasks", [])
+    tasks, set_tasks = use_state(fresh_tasks)
+    active_filter, set_filter = use_state("all")
+    draft, set_draft = use_state("")
+
+    def toggle_task(task_id):
+        set_tasks(
+            lambda current: [
+                {**task, "done": not task["done"]} if task["id"] == task_id else task
+                for task in current
+            ]
+        )
+
+    def add_task(event):
+        event.prevent_default()
+        title = " ".join(draft.split()).strip()
+        if not title:
+            return
+        next_id = max((task["id"] for task in tasks), default=0) + 1
+        set_tasks(
+            lambda current: [
+                *current,
+                {
+                    "id": next_id,
+                    "title": title[:100],
+                    "project": "Inbox",
+                    "assignee": "You",
+                    "initials": "YO",
+                    "tone": "violet",
+                    "done": False,
+                    "priority": "Medium",
+                },
+            ]
+        )
+        set_draft("")
+
+    visible_tasks = [
+        task
+        for task in tasks
+        if active_filter == "all"
+        or (active_filter == "open" and not task["done"])
+        or (active_filter == "done" and task["done"])
+    ]
     completed = sum(1 for task in tasks if task["done"])
+    current_path = props["location"].pathname
     metrics = [
         {"icon": "check", "value": str(completed), "label": "Completed", "caption": "tasks this week", "trend": "+12%", "tone": "violet"},
         {"icon": "clock", "value": "18.4h", "label": "Deep work", "caption": "focused time", "trend": "+2.4h", "tone": "cyan"},
@@ -247,7 +315,7 @@ def App(props):
     return h(
         "div",
         {"className": "app-shell", "id": "overview"},
-        h(Sidebar, {}),
+        h(Sidebar, {"current_path": current_path}),
         h(
             "main",
             {"className": "workspace"},
@@ -270,7 +338,23 @@ def App(props):
                 ),
             ),
             h("section", {"className": "metrics"}, [h(MetricCard, metric) for metric in metrics]),
-            h("section", {"className": "dashboard-grid"}, h(FocusPanel, {"tasks": tasks}), h(ActivityPanel, {})),
+            h(
+                "section",
+                {"className": "dashboard-grid"},
+                h(
+                    FocusPanel,
+                    {
+                        "tasks": visible_tasks,
+                        "on_toggle": toggle_task,
+                        "active_filter": active_filter,
+                        "on_filter": set_filter,
+                        "draft": draft,
+                        "on_draft": set_draft,
+                        "on_add": add_task,
+                    },
+                ),
+                h(ActivityPanel, {}),
+            ),
             h(
                 "section",
                 {"className": "project-banner"},
@@ -297,4 +381,36 @@ def App(props):
             ),
         ),
         h("div", {"className": "toast", "id": "toast", "role": "status", "aria-live": "polite"}),
+    )
+
+
+def About(_props):
+    return h(
+        "main",
+        {"className": "workspace"},
+        h("span", {"className": "eyebrow eyebrow--accent"}, "PyReact 1.1"),
+        h("h1", None, "Python is the runtime", h("span", None, ".")),
+        h("p", None, "Hooks, routing, SSR, sessions and hot reload are handled by PyReact."),
+        h(Link, {"className": "button", "to": "/"}, "Back to dashboard"),
+    )
+
+
+def App(props):
+    return h(
+        "div",
+        None,
+        h(GlobalStyles, None),
+        h(
+            Router,
+            {
+                "routes": [
+                    route("/", Dashboard),
+                    route("/tasks", Dashboard),
+                    route("/timeline", Dashboard),
+                    route("/about", About),
+                ],
+                "location": props.get("path", "/"),
+                "fallback": h("h1", {"role": "alert"}, "404 — Page not found"),
+            },
+        ),
     )

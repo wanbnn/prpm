@@ -8,11 +8,11 @@ from scripts.set_ci_version import create_post_version, update_ci_version
 
 
 def test_create_post_version_is_unique_per_attempt():
-    assert create_post_version("0.3.0", 12345, 1) == "0.3.0.post1234501"
-    assert create_post_version("0.3.0", 12345, 2) == "0.3.0.post1234502"
+    assert create_post_version("0.4.0", 12345, 1) == "0.4.0.post1234501"
+    assert create_post_version("0.4.0", 12345, 2) == "0.4.0.post1234502"
 
 
-@pytest.mark.parametrize("base_version", ["0.3.0.post1", "v0.3.0", "0.3-beta"])
+@pytest.mark.parametrize("base_version", ["0.4.0.post1", "v0.4.0", "0.4-beta"])
 def test_create_post_version_rejects_non_release_versions(base_version):
     with pytest.raises(ValueError):
         create_post_version(base_version, 1, 1)

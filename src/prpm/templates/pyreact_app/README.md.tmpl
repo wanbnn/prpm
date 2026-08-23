@@ -1,7 +1,7 @@
 # {{PROJECT_NAME}}
 
-Um dashboard funcional construído com
-[PyReact](https://github.com/wanbnn/pyreact) e gerenciado pelo
+Uma aplicação server-driven criada com
+[PyReact](https://github.com/wanbnn/pyreact) e gerenciada pelo
 [PRPM](https://github.com/wanbnn/prpm).
 
 ## Começando
@@ -11,46 +11,49 @@ prpm install
 prpm run dev
 ```
 
-Abra <http://127.0.0.1:3000>. O servidor recarrega a página automaticamente
-quando um arquivo em `src/` ou `public/` é alterado.
+Abra <http://127.0.0.1:3000>. O PyReact executa os componentes em Python,
+mantém estado isolado por sessão e recarrega o navegador quando o código muda.
 
 ## O que este exemplo demonstra
 
-- componentes funcionais e composição com `h()`;
-- propriedades, listas e renderização condicional;
-- Server-Side Rendering com `render_to_string()`;
-- endpoints que devolvem fragmentos renderizados pelo PyReact;
-- interações progressivas no navegador;
-- testes do componente e da camada HTTP;
-- build estático para a pasta `dist/`.
+- componentes funcionais, hooks e listas keyed;
+- eventos e formulários processados pelo runtime Python;
+- routing integrado à History API;
+- SSR e streaming disponíveis sem servidor customizado;
+- CSS global registrado pelo PyReact;
+- hot reload e build de produção;
+- testes de SSR e do protocolo interativo.
 
 ## Estrutura
 
 ```text
 src/
-├── app.py                  # composição da página e documento SSR
-├── build.py                # build estático
-├── data.py                 # dados iniciais do exemplo
-├── server.py               # servidor e API de desenvolvimento
+├── app.py                  # entrada descoberta pelo runtime
+├── data.py                 # dados iniciais por sessão
 └── components/
-    └── dashboard.py        # componentes reutilizáveis
+    └── dashboard.py        # componentes, hooks e rotas
 public/
-├── app.js                  # interações progressivas
 ├── favicon.svg
 └── styles.css
 tests/
 ├── test_app.py
-└── test_server.py
+└── test_runtime.py
 ```
 
 ## Comandos
 
 ```bash
-prpm run dev -- --port 4100
+prpm run dev -- --port 4100 --no-open
 prpm run build
 prpm test
 prpm add pacote
 ```
 
-Comece alterando `src/components/dashboard.py` e `public/styles.css`.
+O build em ``dist/`` é um serviço Python. Execute-o com:
 
+```bash
+cd dist
+python serve.py
+```
+
+Comece alterando ``src/components/dashboard.py`` e ``public/styles.css``.

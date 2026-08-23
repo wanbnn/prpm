@@ -35,7 +35,7 @@ def make_manifest(name: str, description: str = "") -> str:
         f'name = "{safe_name}"\n'
         'version = "0.1.0"\n'
         f'description = "{description}"\n'
-        'requires-python = ">=3.9"\n'
+        'requires-python = ">=3.10"\n'
         "dependencies = []\n\n"
         "[project.optional-dependencies]\n"
         "dev = []\n\n"
@@ -150,4 +150,3 @@ def _requirement(value: str) -> Requirement:
         return Requirement(value)
     except InvalidRequirement as exc:
         raise PrpmError(f"Dependência inválida: {value}") from exc
-

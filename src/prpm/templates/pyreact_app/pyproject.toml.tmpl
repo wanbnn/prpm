@@ -2,9 +2,9 @@
 name = "{{PACKAGE_NAME}}"
 version = "0.1.0"
 description = "Uma aplicação PyReact criada com PRPM"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
-    "pyreact-framework>=1.0.5",
+    "pyreact-framework>=1.1.0",
 ]
 
 [project.optional-dependencies]
@@ -16,17 +16,18 @@ dev = [
 entry = "src/app.py"
 output = "dist"
 dev_port = 3000
+title = "{{PROJECT_NAME}} · Orbit"
+public = "public"
 ssr = true
 css_modules = false
 source_maps = true
 
 [tool.prpm.scripts]
-dev = "python -m src.server"
-build = "python -m src.build"
+dev = "pyreact dev"
+build = "pyreact build"
 test = "python -m pytest"
 generate = "pyreact generate"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
-

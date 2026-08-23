@@ -89,10 +89,10 @@ cd my-app
 prpm run dev
 ```
 
-The command creates a complete SSR dashboard, installs `pyreact-framework`
-inside `.venv`, and writes the lockfile. The generated project includes a
-development server, interactive API, light and dark themes, static build, and
-tests.
+The command creates a complete server-driven dashboard, installs
+`pyreact-framework` inside `.venv`, and writes the lockfile. The generated
+project uses PyReact hooks, routing, SSR, isolated browser sessions, hot reload,
+production launcher, light and dark themes, and runtime tests.
 
 For an existing project:
 
@@ -175,8 +175,8 @@ The manifest remains a valid `pyproject.toml`:
 [project]
 name = "my-app"
 version = "0.1.0"
-requires-python = ">=3.9"
-dependencies = ["pyreact-framework>=1.0.5"]
+requires-python = ">=3.10"
+dependencies = ["pyreact-framework>=1.1.0"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
@@ -249,7 +249,7 @@ Verify any published package:
 
 ```bash
 prpm verify prpm
-prpm verify "prpm==0.3.0"
+prpm verify "prpm==0.4.0"
 ```
 
 Remote verification compares files with PyPI SHA-256 values and validates every

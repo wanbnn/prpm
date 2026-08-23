@@ -1,27 +1,31 @@
 from pyreact import h, render_to_string
 
-from src.app import render_app, render_document
+from src.app import render_app
 from src.components import App, TaskList
 from src.data import fresh_tasks
 
 
-def test_app_is_composed_with_pyreact():
-    html = render_to_string(h(App, {"tasks": fresh_tasks()}))
+def test_app_is_composed_with_hooks_and_routing():
+    html = render_app("/")
     assert 'data-reactroot=""' in html
     assert "Good morning, Builder" in html
     assert "Rendered with PyReact" in html
     assert "Today’s tasks" in html
 
 
-def test_task_list_renders_data_from_props():
-    html = render_to_string(h(TaskList, {"tasks": fresh_tasks()[:1]}))
+def test_task_list_renders_keyed_data_from_props():
+    html = render_to_string(
+        h(TaskList, {"tasks": fresh_tasks()[:1], "on_toggle": lambda task_id: None})
+    )
     assert "Review the final landing page" in html
     assert 'data-task-id="1"' in html
 
 
-def test_document_loads_assets_and_ssr_markup():
-    html = render_document(fresh_tasks())
-    assert html.startswith("<!doctype html>")
-    assert 'src="/app.js"' in html
-    assert 'href="/styles.css"' in html
-    assert render_app(fresh_tasks()) in html
+def test_about_route_renders_through_builtin_router():
+    html = render_app("/about")
+    assert "Python is the runtime" in html
+    assert 'data-pyreact-link="true"' in html
+
+
+def test_public_app_component_can_be_rendered_directly():
+    assert "Good morning, Builder" in render_to_string(h(App, None))

@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "prpm"
-version = "0.3.0"
+version = "0.4.0"
 description = "Package and project manager for the PyReact ecosystem"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = "MIT"
 authors = [
     { name = "wanbnn", email = "gcncomercial@gmail.com" },

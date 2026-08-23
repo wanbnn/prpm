@@ -1,0 +1,37 @@
+import re
+from pathlib import Path
+
+from pyreact.runtime import LiveApplication
+
+
+def _path_for(html, attribute, value=None):
+    expected = f'{attribute}="{value}"' if value is not None else attribute
+    pattern = rf'<[^>]*{re.escape(expected)}[^>]*data-pyreact-path="([^"]+)"'
+    match = re.search(pattern, html)
+    assert match, f"interactive node not found: {expected}"
+    return match.group(1)
+
+
+def test_live_runtime_updates_session_state_and_routes():
+    application = LiveApplication(Path("src/app.py"), Path("public"))
+    _, session = application.session()
+
+    html = session.render_path("/")
+    assert len(re.findall(r'<li class="task(?: is-done)?"', html)) == 4
+
+    input_path = _path_for(html, 'name', 'title')
+    html = session.dispatch(
+        input_path,
+        "input",
+        {"type": "input", "target": {"value": "Ship the PRPM migration"}},
+    )
+    form_path = _path_for(html, 'id', 'quick-add')
+    html = session.dispatch(form_path, "submit", {"type": "submit", "target": {}})
+    assert "Ship the PRPM migration" in html
+
+    toggle_path = _path_for(html, 'data-task-id', '2')
+    html = session.dispatch(toggle_path, "click", {"type": "click", "target": {}})
+    assert 'data-task-id="2"' in html
+    assert 'aria-pressed="true"' in html
+
+    assert "Python is the runtime" in session.render_path("/about")

@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.0 - 2026-08-23
+
+### Added
+
+- Generated applications now demonstrate PyReact hooks, keyed lists, routing,
+  SSR, session state, and the live runtime protocol.
+- Runtime-level scaffold tests for events, forms, state updates, and routes.
+
+### Changed
+
+- Migrated generated development and production commands to `pyreact dev` and
+  `pyreact build`.
+- Removed the duplicated HTTP server, JSON fragment API, browser JavaScript,
+  and static-only builder from the scaffold.
+- Raised the Python requirement to 3.10 and the generated PyReact requirement
+  to 1.1.0.
+
 ## 0.3.0 - 2026-07-27
 
 - Added `prpm login`, `logout`, and `whoami` with system-keyring token storage.

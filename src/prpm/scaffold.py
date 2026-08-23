@@ -13,16 +13,13 @@ TEMPLATE_FILES = (
     ("pyproject.toml.tmpl", "pyproject.toml"),
     ("src/__init__.py.tmpl", "src/__init__.py"),
     ("src/app.py.tmpl", "src/app.py"),
-    ("src/build.py.tmpl", "src/build.py"),
     ("src/data.py.tmpl", "src/data.py"),
-    ("src/server.py.tmpl", "src/server.py"),
     ("src/components/__init__.py.tmpl", "src/components/__init__.py"),
     ("src/components/dashboard.py.tmpl", "src/components/dashboard.py"),
-    ("public/app.js.tmpl", "public/app.js"),
     ("public/favicon.svg.tmpl", "public/favicon.svg"),
     ("public/styles.css.tmpl", "public/styles.css"),
     ("tests/test_app.py.tmpl", "tests/test_app.py"),
-    ("tests/test_server.py.tmpl", "tests/test_server.py"),
+    ("tests/test_runtime.py.tmpl", "tests/test_runtime.py"),
 )
 
 
