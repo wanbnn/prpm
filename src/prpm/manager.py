@@ -6,6 +6,7 @@ import tempfile
 import urllib.error
 import urllib.request
 from pathlib import Path
+from typing import Optional
 
 from packaging.requirements import Requirement
 from packaging.utils import canonicalize_name
@@ -27,7 +28,7 @@ class PackageManager:
         self,
         include_dev: bool = True,
         frozen: bool = False,
-        verify_hashes: bool | None = None,
+        verify_hashes: Optional[bool] = None,
     ) -> None:
         all_requirements = self.manifest.all_dependencies(True)
         if verify_hashes is None:
