@@ -25,8 +25,11 @@ TEMPLATE_FILES = (
 
 def create_project(destination: Path, name: str) -> None:
     """Materialize the bundled PyReact application template."""
-    if destination.exists() and any(destination.iterdir()):
-        raise PrpmError(f"O diretório {destination} já existe e não está vazio.")
+    if destination.exists():
+        if not destination.is_dir():
+            raise PrpmError(f"O caminho {destination} já existe e não é um diretório.")
+        if any(destination.iterdir()):
+            raise PrpmError(f"O diretório {destination} já existe e não está vazio.")
 
     destination.mkdir(parents=True, exist_ok=True)
     package_name = normalized_project_name(name)
