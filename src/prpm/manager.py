@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import urllib.error
 import urllib.request
@@ -26,9 +27,16 @@ class PackageManager:
         self,
         include_dev: bool = True,
         frozen: bool = False,
-        verify_hashes: bool = False,
+        verify_hashes: bool | None = None,
     ) -> None:
         all_requirements = self.manifest.all_dependencies(True)
+        if verify_hashes is None:
+            verify_hashes = os.getenv("PRPM_VERIFY_HASHES", "").lower() in {
+                "1",
+                "true",
+                "yes",
+                "on",
+            }
         if not self.environment.satisfies_python(self.manifest.requires_python):
             raise PrpmError(
                 f"Python atual não satisfaz {self.manifest.requires_python}."
