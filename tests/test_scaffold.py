@@ -52,3 +52,13 @@ def test_create_project_refuses_non_empty_directory(tmp_path):
 
     with pytest.raises(PrpmError, match="não está vazio"):
         create_project(destination, "existing")
+
+
+def test_create_project_refuses_existing_file_path(tmp_path):
+    destination = tmp_path / "existing"
+    destination.write_text("user data", encoding="utf-8")
+
+    with pytest.raises(PrpmError, match="não é um diretório"):
+        create_project(destination, "existing")
+
+    assert destination.read_text(encoding="utf-8") == "user data"
