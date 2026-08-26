@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import platform
+import re
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,11 +17,22 @@ from prpm.errors import PrpmError
 
 LOCK_NAME = "prpm.lock"
 LOCK_VERSION = 1
+_SHA256 = re.compile(r"^[0-9a-fA-F]{64}$")
 
 
 def content_hash(requirements: list[str]) -> str:
     normalized = "\n".join(sorted(requirements))
     return "sha256:" + hashlib.sha256(normalized.encode()).hexdigest()
+
+
+def _normalized_hash(value: str) -> str:
+    value = value.strip()
+    if ":" in value:
+        algorithm, digest = value.split(":", 1)
+        return f"{algorithm.lower()}:{digest.lower()}"
+    if _SHA256.fullmatch(value):
+        return f"sha256:{value.lower()}"
+    raise PrpmError(f"Hash inválido no prpm.lock: {value!r}")
 
 
 class Lockfile:
@@ -90,7 +102,10 @@ class Lockfile:
                         else f"{name}=={metadata['version']}"
                     ),
                     "url": download.get("url"),
-                    "hashes": sorted(archive.get("hashes", {}).values()),
+                    "hashes": sorted(
+                        f"{algorithm.lower()}:{digest.lower()}"
+                        for algorithm, digest in archive.get("hashes", {}).items()
+                    ),
                 }
             )
         packages.sort(key=lambda item: canonicalize_name(item["name"]))
@@ -106,6 +121,28 @@ class Lockfile:
             if not include_dev and package.get("dev", False):
                 continue
             values.append(package.get("requirement") or f"{package['name']}=={package['version']}")
+        return values
+
+    def hashed_requirements(self, include_dev: bool = True) -> list[str]:
+        """Return requirements-file lines protected by lockfile hashes."""
+        values = []
+        missing = []
+        for package in self.read().get("packages", []):
+            if not include_dev and package.get("dev", False):
+                continue
+            requirement = package.get("requirement") or f"{package['name']}=={package['version']}"
+            hashes = [_normalized_hash(value) for value in package.get("hashes", [])]
+            if not hashes:
+                missing.append(package["name"])
+                continue
+            hash_options = " ".join(f"--hash={value}" for value in sorted(set(hashes)))
+            values.append(f"{requirement} {hash_options}")
+        if missing:
+            raise PrpmError(
+                "Instalação com hashes exige hash para todos os pacotes; "
+                f"ausente em: {', '.join(sorted(missing, key=str.lower))}. "
+                "Regere o lockfile na plataforma atual ou desative PRPM_VERIFY_HASHES."
+            )
         return values
 
     @staticmethod

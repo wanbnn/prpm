@@ -1,3 +1,4 @@
+from pathlib import Path
 from types import SimpleNamespace
 
 from prpm.manager import PackageManager
@@ -81,3 +82,36 @@ def test_frozen_and_regular_install_share_the_same_pinned_path(tmp_path):
     manager.install(frozen=True)
 
     assert calls == [["install", "app==1.4.2"]]
+
+
+def test_verified_install_uses_pip_require_hashes_and_lockfile_lines(tmp_path):
+    manager, calls = _manager(tmp_path)
+    manager.lockfile.is_current = lambda requirements: True
+    manager.lockfile.hashed_requirements = lambda include_dev=True: [
+        "app==1.4.2 --hash=sha256:" + "a" * 64,
+        "dep==3.1.0 --hash=sha256:" + "b" * 64,
+    ]
+
+    manager.install(frozen=True, verify_hashes=True)
+
+    assert len(calls) == 1
+    assert calls[0][:3] == ["install", "--require-hashes", "-r"]
+    requirements_path = Path(calls[0][3])
+    # The temporary file is intentionally gone after pip returns; the important
+    # contract is that pip received --require-hashes and a generated -r file.
+    assert not requirements_path.exists()
+
+
+def test_verified_install_can_be_enabled_by_environment(tmp_path, monkeypatch):
+    manager, calls = _manager(tmp_path)
+    manager.lockfile.is_current = lambda requirements: True
+    requested = []
+    manager.lockfile.hashed_requirements = lambda include_dev=True: requested.append(include_dev) or [
+        "app==1.4.2 --hash=sha256:" + "a" * 64
+    ]
+    monkeypatch.setenv("PRPM_VERIFY_HASHES", "1")
+
+    manager.install(include_dev=False, frozen=True)
+
+    assert requested == [False]
+    assert calls[0][:3] == ["install", "--require-hashes", "-r"]

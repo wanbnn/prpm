@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import json
+import os
+import tempfile
 import urllib.error
 import urllib.request
 from pathlib import Path
+from typing import Optional
 
 from packaging.requirements import Requirement
 from packaging.utils import canonicalize_name
@@ -21,8 +24,20 @@ class PackageManager:
         self.environment = ProjectEnvironment(manifest.root)
         self.lockfile = Lockfile(manifest.root)
 
-    def install(self, include_dev: bool = True, frozen: bool = False) -> None:
+    def install(
+        self,
+        include_dev: bool = True,
+        frozen: bool = False,
+        verify_hashes: Optional[bool] = None,
+    ) -> None:
         all_requirements = self.manifest.all_dependencies(True)
+        if verify_hashes is None:
+            verify_hashes = os.getenv("PRPM_VERIFY_HASHES", "").lower() in {
+                "1",
+                "true",
+                "yes",
+                "on",
+            }
         if not self.environment.satisfies_python(self.manifest.requires_python):
             raise PrpmError(
                 f"Python atual não satisfaz {self.manifest.requires_python}."
@@ -43,14 +58,35 @@ class PackageManager:
             )
             self.lockfile.write(document)
 
-        # The lockfile is authoritative for both regular and frozen installs.
-        # Installing the manifest ranges after resolving them would run pip's
-        # resolver a second time and could produce a different environment from
-        # the lockfile if the package index changed between both operations.
-        selected = self.lockfile.pinned_requirements(include_dev)
-        if selected:
-            console.info(f"Instalando {len(selected)} pacote(s) do lockfile")
-            self.environment.pip(["install", *selected])
+        if verify_hashes:
+            selected = self.lockfile.hashed_requirements(include_dev)
+            if selected:
+                console.info(
+                    f"Instalando {len(selected)} pacote(s) com hashes do lockfile"
+                )
+                with tempfile.TemporaryDirectory(prefix="prpm-install-") as temporary:
+                    requirements_file = Path(temporary) / "requirements.txt"
+                    requirements_file.write_text(
+                        "\n".join(selected) + "\n",
+                        encoding="utf-8",
+                    )
+                    self.environment.pip(
+                        [
+                            "install",
+                            "--require-hashes",
+                            "-r",
+                            str(requirements_file),
+                        ]
+                    )
+        else:
+            # The lockfile is authoritative for both regular and frozen installs.
+            # Installing the manifest ranges after resolving them would run pip's
+            # resolver a second time and could produce a different environment from
+            # the lockfile if the package index changed between both operations.
+            selected = self.lockfile.pinned_requirements(include_dev)
+            if selected:
+                console.info(f"Instalando {len(selected)} pacote(s) do lockfile")
+                self.environment.pip(["install", *selected])
         console.success("Dependências instaladas")
 
     def add(self, specifications: list[str], dev: bool = False) -> None:
