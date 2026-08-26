@@ -141,7 +141,7 @@ class Lockfile:
             raise PrpmError(
                 "Instalação com hashes exige hash para todos os pacotes; "
                 f"ausente em: {', '.join(sorted(missing, key=str.lower))}. "
-                "Regere o lockfile na plataforma atual ou instale sem --verify-hashes."
+                "Regere o lockfile na plataforma atual ou desative PRPM_VERIFY_HASHES."
             )
         return values
 
