@@ -23,7 +23,7 @@ creating an incompatible registry:
 - it uses the standard `pyproject.toml` as its manifest;
 - resolves packages from PyPI, including `pyreact-framework`;
 - automatically creates an isolated `.venv`;
-- generates a reproducible `prpm.lock`;
+- generates a reproducible `prpm.lock` and installs the exact versions it resolves;
 - provides a familiar experience for npm users;
 - remains compatible with `pip`, build backends, and Python editors.
 
@@ -111,8 +111,8 @@ PRPM reads the dependencies already declared in `[project].dependencies`.
 | --- | --- |
 | `prpm create <name>` | Create and install a PyReact application |
 | `prpm init [-y]` | Initialize a `pyproject.toml` |
-| `prpm install` / `prpm i` | Resolve, install, and update `prpm.lock` |
-| `prpm install --frozen` | Install exactly from the lockfile; ideal for CI |
+| `prpm install` / `prpm i` | Resolve, lock, and install the exact resolved versions |
+| `prpm install --frozen` | Install exactly from the existing lockfile; ideal for CI |
 | `prpm add <package>` | Install and save a dependency |
 | `prpm add -D <package>` | Install and save a development dependency |
 | `prpm remove <package>` | Remove a dependency |
@@ -183,14 +183,20 @@ dev = ["pytest>=8"]
 ```
 
 Commit `prpm.lock` to version control. It records the exact version, source, and
-index-provided hashes for every package. In CI, use:
+index-provided hashes for every package. A normal `prpm install` now resolves the
+manifest once, writes those exact versions to `prpm.lock`, and installs those
+same pinned requirements. This prevents a second dependency resolution from
+drifting away from the lockfile if the package index changes during the run.
+
+In CI, use:
 
 ```bash
 prpm install --frozen
 prpm test
 ```
 
-Frozen mode fails before installation if the manifest and lockfile differ.
+Frozen mode fails before installation if the manifest and lockfile differ and
+installs through the same pinned-requirement path as a regular install.
 
 ## Publishing packages
 
