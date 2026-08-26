@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from packaging.markers import default_environment
 from packaging.requirements import Requirement
 from packaging.utils import canonicalize_name
 
@@ -23,6 +24,12 @@ _SHA256 = re.compile(r"^[0-9a-fA-F]{64}$")
 def content_hash(requirements: list[str]) -> str:
     normalized = "\n".join(sorted(requirements))
     return "sha256:" + hashlib.sha256(normalized.encode()).hexdigest()
+
+
+def resolution_environment() -> dict[str, str]:
+    """Return the PEP 508 marker environment used by dependency resolution."""
+    environment = default_environment()
+    return {key: str(environment[key]) for key in sorted(environment)}
 
 
 def _normalized_hash(value: str) -> str:
@@ -54,7 +61,13 @@ class Lockfile:
         return data
 
     def is_current(self, requirements: list[str]) -> bool:
-        return self.exists() and self.read().get("contentHash") == content_hash(requirements)
+        if not self.exists():
+            return False
+        document = self.read()
+        return (
+            document.get("contentHash") == content_hash(requirements)
+            and document.get("environment") == resolution_environment()
+        )
 
     def resolve(
         self,
@@ -172,6 +185,7 @@ class Lockfile:
             "lockVersion": LOCK_VERSION,
             "generatedAt": datetime.now(timezone.utc).isoformat(),
             "python": platform.python_version(),
+            "environment": resolution_environment(),
             "contentHash": content_hash(requirements),
             "packages": packages,
         }
