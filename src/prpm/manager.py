@@ -23,7 +23,6 @@ class PackageManager:
 
     def install(self, include_dev: bool = True, frozen: bool = False) -> None:
         all_requirements = self.manifest.all_dependencies(True)
-        requirements = self.manifest.all_dependencies(include_dev)
         if not self.environment.satisfies_python(self.manifest.requires_python):
             raise PrpmError(
                 f"Python atual não satisfaz {self.manifest.requires_python}."
@@ -34,7 +33,6 @@ class PackageManager:
                 raise PrpmError(
                     "prpm.lock está ausente ou desatualizado; remova --frozen para regenerá-lo."
                 )
-            selected = self.lockfile.pinned_requirements(include_dev)
         else:
             console.info("Resolvendo dependências")
             document = self.lockfile.resolve(
@@ -44,9 +42,14 @@ class PackageManager:
                 self.manifest.dependencies(False),
             )
             self.lockfile.write(document)
-            selected = requirements
+
+        # The lockfile is authoritative for both regular and frozen installs.
+        # Installing the manifest ranges after resolving them would run pip's
+        # resolver a second time and could produce a different environment from
+        # the lockfile if the package index changed between both operations.
+        selected = self.lockfile.pinned_requirements(include_dev)
         if selected:
-            console.info(f"Instalando {len(selected)} pacote(s)")
+            console.info(f"Instalando {len(selected)} pacote(s) do lockfile")
             self.environment.pip(["install", *selected])
         console.success("Dependências instaladas")
 
