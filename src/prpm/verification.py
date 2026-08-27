@@ -121,19 +121,38 @@ def verify_remote(target: str, repository: Repository) -> dict[str, Any]:
             if not filename or Path(filename).name != filename:
                 raise PrpmError("O índice retornou um nome de arquivo inseguro.")
             path = temporary_path / filename
-            _download(str(item["url"]), path)
-            expected = str(item.get("digests", {}).get("sha256", ""))
-            actual = file_sha256(path)
-            if not expected or actual != expected:
-                raise PrpmError(f"SHA-256 do PyPI divergente: {filename}")
-            file_report: dict[str, Any] = {
-                "filename": filename,
-                "sha256": actual,
-                "size": path.stat().st_size,
-            }
-            if path.suffix == ".whl":
-                file_report["wheel"] = verify_wheel(path)
-            checked_files.append(file_report)
+            try:
+                actual, actual_size = _download(str(item["url"]), path)
+                expected = str(item.get("digests", {}).get("sha256", ""))
+                if not expected or actual != expected:
+                    raise PrpmError(f"SHA-256 do PyPI divergente: {filename}")
+
+                declared_size = item.get("size")
+                if declared_size is not None:
+                    try:
+                        expected_size = int(declared_size)
+                    except (TypeError, ValueError) as exc:
+                        raise PrpmError(
+                            f"Tamanho inválido informado pelo índice: {filename}"
+                        ) from exc
+                    if actual_size != expected_size:
+                        raise PrpmError(
+                            f"Tamanho do artefato divergente no PyPI: {filename}"
+                        )
+
+                file_report: dict[str, Any] = {
+                    "filename": filename,
+                    "sha256": actual,
+                    "size": actual_size,
+                }
+                if path.suffix == ".whl":
+                    file_report["wheel"] = verify_wheel(path)
+                checked_files.append(file_report)
+            finally:
+                # A release can contain dozens of platform wheels. Discard each
+                # verified artifact immediately so peak temporary disk usage is
+                # bounded by the largest artifact rather than the whole release.
+                path.unlink(missing_ok=True)
     return {
         "scope": "repository",
         "repository": repository.name,
@@ -181,12 +200,18 @@ def _get_json(url: str) -> dict[str, Any]:
         raise PrpmError(f"Não foi possível consultar o repositório: {exc.reason}") from exc
 
 
-def _download(url: str, destination: Path) -> None:
+def _download(url: str, destination: Path) -> tuple[str, int]:
+    """Download one artifact while computing its SHA-256 and byte count."""
     request = urllib.request.Request(url, headers={"User-Agent": "prpm"})
+    hasher = hashlib.sha256()
+    size = 0
     try:
         with urllib.request.urlopen(request, timeout=30) as response:
             with destination.open("wb") as stream:
                 while chunk := response.read(1024 * 1024):
                     stream.write(chunk)
+                    hasher.update(chunk)
+                    size += len(chunk)
     except urllib.error.URLError as exc:
         raise PrpmError(f"Falha ao baixar {destination.name}: {exc.reason}") from exc
+    return hasher.hexdigest(), size
