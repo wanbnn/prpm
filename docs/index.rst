@@ -10,5 +10,6 @@ Project resources
 .. toctree::
    :maxdepth: 1
 
+   REMOTE_VERIFICATION
    changelog
    contributing
