@@ -48,6 +48,16 @@ def build_parser() -> argparse.ArgumentParser:
     install.add_argument("--frozen", action="store_true", help="Exige o lockfile atual")
     install.add_argument("--production", action="store_true", help="Ignora dependências dev")
 
+    sync = commands.add_parser(
+        "sync",
+        help="Sincroniza a .venv exatamente com o prpm.lock",
+    )
+    sync.add_argument(
+        "--production",
+        action="store_true",
+        help="Mantém somente dependências de produção",
+    )
+
     add = commands.add_parser("add", help="Adiciona dependências")
     add.add_argument("packages", nargs="+")
     add.add_argument("-D", "--dev", action="store_true")
@@ -220,6 +230,8 @@ def dispatch(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         return command_create(args)
     if command in {"install", "i"}:
         _manager().install(not args.production, args.frozen)
+    elif command == "sync":
+        _manager().sync(not args.production)
     elif command == "add":
         _manager().add(args.packages, args.dev)
     elif command in {"remove", "rm"}:

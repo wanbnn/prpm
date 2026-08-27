@@ -89,6 +89,57 @@ class PackageManager:
                 self.environment.pip(["install", *selected])
         console.success("Dependências instaladas")
 
+    def sync(
+        self,
+        include_dev: bool = True,
+        verify_hashes: Optional[bool] = None,
+    ) -> list[str]:
+        """Make the project virtualenv match the current lockfile exactly.
+
+        Desired packages are installed first. Only after installation succeeds
+        are packages absent from the selected lock scope removed, so a failed
+        install never destroys the previously working environment. The project
+        itself is protected when it has been installed editable into its own
+        virtualenv.
+        """
+        all_requirements = self.manifest.all_dependencies(True)
+        if not self.lockfile.is_current(all_requirements):
+            raise PrpmError(
+                "Sincronização exige um prpm.lock atual; execute `prpm install` primeiro."
+            )
+
+        self.install(
+            include_dev=include_dev,
+            frozen=True,
+            verify_hashes=verify_hashes,
+        )
+
+        selected = self.lockfile.pinned_requirements(include_dev)
+        desired = {
+            canonicalize_name(Requirement(requirement).name)
+            for requirement in selected
+        }
+        protected = {canonicalize_name(self.manifest.name)}
+        installed = self.environment.installed()
+        extras = sorted(
+            (
+                name
+                for name in installed
+                if canonicalize_name(name) not in desired | protected
+            ),
+            key=str.lower,
+        )
+        if extras:
+            console.info(
+                f"Removendo {len(extras)} pacote(s) ausente(s) do lockfile"
+            )
+            self.environment.pip(["uninstall", "-y", *extras])
+        console.success(
+            "Ambiente sincronizado com o lockfile"
+            + (f"; {len(extras)} pacote(s) removido(s)" if extras else "")
+        )
+        return extras
+
     def add(self, specifications: list[str], dev: bool = False) -> None:
         self.environment.ensure()
         console.info(f"Resolvendo {', '.join(specifications)}")
