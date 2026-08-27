@@ -126,19 +126,60 @@ class PackageManager:
         console.success(f"Removido: {', '.join(names)}")
 
     def update(self, packages: list[str], include_dev: bool = True) -> None:
-        declared = self.manifest.all_dependencies(include_dev)
+        all_requirements = self.manifest.all_dependencies(True)
+        updatable = self.manifest.all_dependencies(include_dev)
+        updatable_by_name = {
+            canonicalize_name(Requirement(item).name): item for item in updatable
+        }
+
         if packages:
             targets = {canonicalize_name(Requirement(item).name) for item in packages}
-            declared = [
-                item
-                for item in declared
-                if canonicalize_name(Requirement(item).name) in targets
-            ]
-            if not declared:
-                raise PrpmError("Nenhum dos pacotes informados está no manifesto.")
-        if declared:
-            self.environment.pip(["install", "--upgrade", *declared])
-        self._refresh_lock()
+            missing = sorted(targets - set(updatable_by_name))
+            if missing:
+                raise PrpmError(
+                    "Não encontrado no manifesto: " + ", ".join(missing)
+                )
+        else:
+            targets = set(updatable_by_name)
+
+        # A partial update needs the current lock as its baseline. Direct
+        # dependencies outside the requested target set remain constrained to
+        # their locked versions; shared transitives are still free to move when
+        # the selected package requires it.
+        partial = bool(packages) or not include_dev
+        constraints: list[str] | None = None
+        if partial:
+            if not self.lockfile.is_current(all_requirements):
+                raise PrpmError(
+                    "Atualização seletiva exige um prpm.lock atual; execute `prpm install` primeiro."
+                )
+            constraints = self.lockfile.direct_pins(
+                include_dev=True,
+                exclude_names=targets,
+            )
+
+        if not self.environment.satisfies_python(self.manifest.requires_python):
+            raise PrpmError(
+                f"Python atual não satisfaz {self.manifest.requires_python}."
+            )
+        self.environment.ensure()
+        console.info("Resolvendo atualização")
+        document = self.lockfile.resolve(
+            self.environment,
+            all_requirements,
+            self.manifest.all_dependencies(True),
+            self.manifest.dependencies(False),
+            constraints=constraints,
+        )
+        self.lockfile.write(document)
+
+        # Reconcile the environment from the exact graph just written. This
+        # keeps .venv and prpm.lock synchronized instead of installing one graph
+        # and independently resolving another graph afterward.
+        selected = self.lockfile.pinned_requirements(include_dev)
+        if selected:
+            console.info(f"Instalando {len(selected)} pacote(s) atualizados do lockfile")
+            self.environment.pip(["install", *selected])
         console.success("Dependências atualizadas")
 
     def list_packages(self, depth: int = 0) -> list[dict[str, str]]:
