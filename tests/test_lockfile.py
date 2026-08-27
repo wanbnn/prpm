@@ -84,6 +84,29 @@ def test_lockfile_can_omit_dev_packages(tmp_path):
     assert lock.pinned_requirements(include_dev=False) == ["app==1.0"]
 
 
+def test_direct_pins_keep_non_target_direct_dependencies_only(tmp_path):
+    lock = Lockfile(tmp_path)
+    lock.write(
+        _document(
+            ["app", "worker", "pytest"],
+            [
+                {"name": "app", "version": "1.5", "direct": True, "dev": False},
+                {"name": "worker", "version": "2.4", "direct": True, "dev": False},
+                {"name": "shared", "version": "4.0", "direct": False, "dev": False},
+                {"name": "pytest", "version": "9.1", "direct": True, "dev": True},
+            ],
+        )
+    )
+
+    assert lock.direct_pins(exclude_names={"APP"}) == [
+        "worker==2.4",
+        "pytest==9.1",
+    ]
+    assert lock.direct_pins(include_dev=False, exclude_names={"app"}) == [
+        "worker==2.4"
+    ]
+
+
 def test_hashed_requirements_support_new_and_legacy_sha256_values(tmp_path):
     lock = Lockfile(tmp_path)
     lock.write(

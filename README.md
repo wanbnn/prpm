@@ -116,7 +116,7 @@ PRPM reads the dependencies already declared in `[project].dependencies`.
 | `prpm add <package>` | Install and save a dependency |
 | `prpm add -D <package>` | Install and save a development dependency |
 | `prpm remove <package>` | Remove a dependency |
-| `prpm update [packages]` | Update all or selected dependencies |
+| `prpm update [packages]` | Update all or selected dependencies without drifting the lock |
 | `prpm list [--all]` | List direct or all dependencies |
 | `prpm run [script]` | List or run scripts |
 | `prpm exec <command>` | Run a binary inside `.venv` |
@@ -132,6 +132,18 @@ PRPM reads the dependencies already declared in `[project].dependencies`.
 | `prpm doctor` | Show the environment status |
 
 Available aliases are `i`, `rm`, `up`, and `ls`.
+
+Selective updates use the current lockfile as their baseline. For example,
+`prpm update httpx` allows `httpx` and any transitives required by its new
+version to move while keeping other direct dependencies pinned. After resolving,
+PRPM writes the new graph and reconciles `.venv` from those exact pins, so the
+environment cannot silently diverge from `prpm.lock`. Because preserving the
+non-target packages requires a trustworthy baseline, selective updates fail if
+the current lockfile is missing or stale; run `prpm install` first in that case.
+
+`prpm update --production` follows the same rule: production dependencies may
+move while direct development dependencies remain constrained to the versions
+already recorded in the lockfile.
 
 ### Dependencies
 

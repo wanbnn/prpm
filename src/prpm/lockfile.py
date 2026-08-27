@@ -75,17 +75,18 @@ class Lockfile:
         requirements: list[str],
         direct_requirements: list[str],
         production_requirements: list[str] | None = None,
+        constraints: list[str] | None = None,
     ) -> dict[str, Any]:
         if not requirements:
             return self._document([], requirements)
-        raw = self._resolve_report(environment, requirements)
+        raw = self._resolve_report(environment, requirements, constraints)
         production = (
             requirements if production_requirements is None else production_requirements
         )
         production_raw = (
             raw
             if sorted(production) == sorted(requirements)
-            else self._resolve_report(environment, production)
+            else self._resolve_report(environment, production, constraints)
         )
         production_names = {
             canonicalize_name(item["metadata"]["name"])
@@ -136,6 +137,28 @@ class Lockfile:
             values.append(package.get("requirement") or f"{package['name']}=={package['version']}")
         return values
 
+    def direct_pins(
+        self,
+        *,
+        include_dev: bool = True,
+        exclude_names: set[str] | None = None,
+    ) -> list[str]:
+        """Return exact requirements for direct dependencies retained during updates."""
+        excluded = {canonicalize_name(name) for name in (exclude_names or set())}
+        values = []
+        for package in self.read().get("packages", []):
+            if not package.get("direct", False):
+                continue
+            if not include_dev and package.get("dev", False):
+                continue
+            if canonicalize_name(package["name"]) in excluded:
+                continue
+            values.append(
+                package.get("requirement")
+                or f"{package['name']}=={package['version']}"
+            )
+        return values
+
     def hashed_requirements(self, include_dev: bool = True) -> list[str]:
         """Return requirements-file lines protected by lockfile hashes."""
         values = []
@@ -160,23 +183,29 @@ class Lockfile:
 
     @staticmethod
     def _resolve_report(
-        environment: ProjectEnvironment, requirements: list[str]
+        environment: ProjectEnvironment,
+        requirements: list[str],
+        constraints: list[str] | None = None,
     ) -> dict[str, Any]:
         if not requirements:
             return {"install": []}
         with tempfile.TemporaryDirectory(prefix="prpm-resolve-") as temporary:
             report = Path(temporary) / "report.json"
-            environment.pip(
-                [
-                    "install",
-                    "--dry-run",
-                    "--ignore-installed",
-                    "--report",
-                    str(report),
-                    *requirements,
-                ],
-                capture=True,
-            )
+            arguments = [
+                "install",
+                "--dry-run",
+                "--ignore-installed",
+                "--report",
+                str(report),
+            ]
+            if constraints:
+                constraints_file = Path(temporary) / "constraints.txt"
+                constraints_file.write_text(
+                    "\n".join(constraints) + "\n",
+                    encoding="utf-8",
+                )
+                arguments.extend(["-c", str(constraints_file)])
+            environment.pip([*arguments, *requirements], capture=True)
             return json.loads(report.read_text(encoding="utf-8"))
 
     @staticmethod
